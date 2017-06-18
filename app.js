@@ -1,6 +1,6 @@
 const addItems = document.querySelector('.add-items');
 const itemsList = document.querySelector('.plates');
-const items = [];
+const items = JSON.parse(localStorage.getItem('items')) || [];
 
 function addItem(e){
   e.preventDefault();
@@ -12,19 +12,37 @@ function addItem(e){
     done: false
   };
   items.push(item);
+  populateList(items, itemsList);
+  localStorage.setItem('items',JSON.stringify(items));
   this.reset();
   console.log(item);
 }
 
-function populateList(plates = [], platesList){
-  platesList.innerHTML = plates.map((plate, i)=>{
-    return `
-      <li>
-        <label for="">${plate.text}</label>
-      </li>
-    `;
-  }).join('');
+function populateList(plates = [], platesList) {
+    platesList.innerHTML = plates.map((plate, i) => {
+      return `
+        <li>
+          <input type="checkbox" data-index=${i} id="item${i}" ${plate.done ? 'checked' : ''} />
+          <label for="item${i}">${plate.text}</label>
+        </li>
+      `;
+    }).join('');
+  }
+
+function toggleDone(e){
+  //Skip unless clicked item is an input
+  if(!e.target.matches('input')) return;
+  const el = e.target;
+  const index = el.dataset.index
+  //Now we do the toggling. True will become false, and false,true.
+  items[index].done = !items[index].done;
+  localStorage.setItem('items',JSON.stringify(items));
+  populateList(items, itemsList);
+
+  console.log(e.target);
 }
 
 
 addItems.addEventListener('submit', addItem);
+itemsList.addEventListener('click', toggleDone);
+populateList(items, itemsList);
